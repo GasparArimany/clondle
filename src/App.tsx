@@ -1,57 +1,118 @@
 import { useCallback, useMemo, useState } from 'react';
 import { words } from './words';
 import { getRandomWord } from './utils';
+import { Toast } from './components/Toast/Toast';
 
 const AMOUNT_OF_GUESSES = 6;
 
 function App() {
   return (
-    <main className='bg-gray-800 h-screen w-full'>
+    <main className='bg-gray-800 text-zinc-200 h-screen w-full'>
       <Game />
     </main>
   );
 }
 
+type GameStatus = 'playing' | 'won' | 'lost';
+
 function Game() {
   const [word, setWord] = useState(getRandomWord(words));
+  const [currentGuess, setCurrentGuess] = useState('');
+
   const [guesses, setGuesses] = useState<string[]>([]);
 
-  const usedLetters = useMemo(() => {
-    const letterSet = new Set();
+  const [errorMessage, setErrorMessage] = useState('');
 
-    const lastGuess = guesses[guesses.length - 1];
-    lastGuess.split('').forEach((letter) => {
-      letterSet.add(letter);
-    });
+  const isToastOpen = useMemo(() => errorMessage !== '', [errorMessage]);
 
-    return;
-  }, [guesses]);
+  const status: GameStatus = useMemo(() => {
+    const hasWon = guesses.some((guess) => guess === word);
 
-  const handleReset = useCallback(() => {
+    if (hasWon) return 'won';
+
+    if (guesses.length === AMOUNT_OF_GUESSES) return 'lost';
+
+    return 'playing';
+  }, [word, guesses]);
+
+  const handleGameReset = useCallback(() => {
+    // todo reset game status
     setWord(getRandomWord(words));
     setGuesses([]);
   }, []);
 
+  const handleSubmitGuess: React.FormEventHandler<HTMLFormElement> =
+    useCallback(
+      (e) => {
+        e.preventDefault();
+
+        if (currentGuess.length !== 5) {
+          setErrorMessage('guess must be 5 letters long');
+          return;
+        }
+
+        setGuesses((prevGuesses) => [...prevGuesses, currentGuess]);
+      },
+      [currentGuess]
+    );
+
+  const handleCurrentGuessChange: React.ChangeEventHandler<HTMLInputElement> =
+    useCallback((e) => {
+      const guess = e.currentTarget.value;
+      if (guess.length > 5) {
+        return;
+      }
+
+      setCurrentGuess(guess);
+    }, []);
+
+  const clearError = useCallback(() => {
+    setErrorMessage('');
+  }, []);
+
   return (
-    <section className='max-w-lg border-2 border-slate-100 my-0 mx-auto'>
-      <Guesses />
-      <div className='flex flex-col gap-4'>
-        <button onClick={handleReset}>Reset the word</button>
-        <span className='text-zinc-200'>{word}</span>
-      </div>
+    <section className='max-w-lg my-0 mx-auto flex flex-col gap-4'>
+      <Guesses guesses={guesses} />
+      {status === 'playing' && (
+        <div className='flex flex-col gap-4'>
+          <form onSubmit={handleSubmitGuess}>
+            <fieldset className='flex gap-4'>
+              <legend className='sr-only'>Make your guesses here!</legend>
+              <label htmlFor='guess'>Enter a guess:</label>
+              <input
+                name='guess'
+                id='guess'
+                maxLength={5}
+                type='text'
+                onChange={handleCurrentGuessChange}
+              />
+            </fieldset>
+          </form>
+        </div>
+      )}
+      {status === 'won' && <div className='flex flex-col gap-4'>You won!</div>}
+      {status === 'lost' && (
+        <div className='flex flex-col gap-4'>You lost! The word was {word}</div>
+      )}
+      <button onClick={handleGameReset}>Reset Game</button>
+      <Toast
+        isOpen={isToastOpen}
+        message={errorMessage}
+        onDismiss={clearError}
+      />
     </section>
   );
 }
 
-function Guesses() {
+function Guesses({ guesses }: { guesses: string[] }) {
   return [
     ...Array.from({ length: AMOUNT_OF_GUESSES }, (_, index) => index + 1),
-  ].map((num: number) => {
-    return <Guess key={num} guess={num} />;
+  ].map((num: number, i) => {
+    return <Guess key={num} guess={guesses[i]} />;
   });
 }
 
-function Guess({ guess }: { guess: number }) {
+function Guess({ guess }: { guess: string }) {
   return <div>{guess}</div>;
 }
 
