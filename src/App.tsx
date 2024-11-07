@@ -1,13 +1,18 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { words } from './words';
 import { getRandomWord } from './utils';
 import { Toast } from './components/Toast/Toast';
 
 const AMOUNT_OF_GUESSES = 6;
 
+export const MAIN_CONTENT_ID = 'wordle-main';
+
 function App() {
   return (
-    <main className='bg-gray-800 text-zinc-200 h-screen w-full'>
+    <main
+      id={MAIN_CONTENT_ID}
+      className='bg-gray-800 text-zinc-200 h-screen w-full'
+    >
       <Game />
     </main>
   );
@@ -18,12 +23,8 @@ type GameStatus = 'playing' | 'won' | 'lost';
 function Game() {
   const [word, setWord] = useState(getRandomWord(words));
   const [currentGuess, setCurrentGuess] = useState('');
-
   const [guesses, setGuesses] = useState<string[]>([]);
-
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const isToastOpen = useMemo(() => errorMessage !== '', [errorMessage]);
+  const toastRef = useRef(null);
 
   const status: GameStatus = useMemo(() => {
     const hasWon = guesses.some((guess) => guess === word);
@@ -47,7 +48,9 @@ function Game() {
         e.preventDefault();
 
         if (currentGuess.length !== 5) {
-          setErrorMessage('guess must be 5 letters long');
+          // eslint-disable-next-line
+          //@ts-ignore
+          toastRef.current?.show('guess must be 5 letters long');
           return;
         }
 
@@ -66,10 +69,6 @@ function Game() {
       setCurrentGuess(guess);
     }, []);
 
-  const clearError = useCallback(() => {
-    setErrorMessage('');
-  }, []);
-
   return (
     <section className='max-w-lg my-0 mx-auto flex flex-col gap-4'>
       <Guesses guesses={guesses} />
@@ -80,6 +79,7 @@ function Game() {
               <legend className='sr-only'>Make your guesses here!</legend>
               <label htmlFor='guess'>Enter a guess:</label>
               <input
+                className='text-black'
                 name='guess'
                 id='guess'
                 maxLength={5}
@@ -95,11 +95,7 @@ function Game() {
         <div className='flex flex-col gap-4'>You lost! The word was {word}</div>
       )}
       <button onClick={handleGameReset}>Reset Game</button>
-      <Toast
-        isOpen={isToastOpen}
-        message={errorMessage}
-        onDismiss={clearError}
-      />
+      <Toast ref={toastRef} />
     </section>
   );
 }

@@ -13,3 +13,9 @@
   border: 0;
   white-space: nowrap;
 }
+
+@layer components {
+  .toast {
+    @apply absolute w-24  px-4 py-2 rounded-sm;
+  }
+}
