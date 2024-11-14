@@ -1,9 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { words } from './words';
 import { getRandomWord } from './utils';
-import { Toast } from './components/Toast/Toast';
+import { Toast, ToastRef } from './components/Toast/Toast';
+import { Guess } from './components/Guess/Guess';
 
 const AMOUNT_OF_GUESSES = 6;
+export const WORD_LENGTH = 5;
 
 export const MAIN_CONTENT_ID = 'wordle-main';
 
@@ -11,7 +13,7 @@ function App() {
   return (
     <main
       id={MAIN_CONTENT_ID}
-      className='bg-gray-800 text-zinc-200 h-screen w-full'
+      className='bg-gray-800 text-gray-200 h-screen w-full'
     >
       <Game />
     </main>
@@ -24,7 +26,7 @@ function Game() {
   const [word, setWord] = useState(getRandomWord(words));
   const [currentGuess, setCurrentGuess] = useState('');
   const [guesses, setGuesses] = useState<string[]>([]);
-  const toastRef = useRef(null);
+  const toastRef = useRef<ToastRef | null>(null);
 
   const status: GameStatus = useMemo(() => {
     const hasWon = guesses.some((guess) => guess === word);
@@ -47,10 +49,8 @@ function Game() {
       (e) => {
         e.preventDefault();
 
-        if (currentGuess.length !== 5) {
-          // eslint-disable-next-line
-          //@ts-ignore
-          toastRef.current?.show('guess must be 5 letters long');
+        if (currentGuess.length !== WORD_LENGTH) {
+          toastRef.current?.show(`guess must be ${WORD_LENGTH} letters long`);
           return;
         }
 
@@ -70,7 +70,7 @@ function Game() {
     }, []);
 
   return (
-    <section className='max-w-lg my-0 mx-auto flex flex-col gap-4'>
+    <section className='pt-4 max-w-lg mx-auto flex flex-col gap-4'>
       <Guesses guesses={guesses} />
       {status === 'playing' && (
         <div className='flex flex-col gap-4'>
@@ -106,10 +106,6 @@ function Guesses({ guesses }: { guesses: string[] }) {
   ].map((num: number, i) => {
     return <Guess key={num} guess={guesses[i]} />;
   });
-}
-
-function Guess({ guess }: { guess: string }) {
-  return <div>{guess}</div>;
 }
 
 export default App;

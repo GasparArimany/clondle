@@ -4,11 +4,11 @@ import {
   forwardRef,
   useImperativeHandle,
   useReducer,
+  Reducer,
 } from 'react';
 import CloseIcon from '../Icons/Close';
 import classNames from 'classnames';
-import { createPortal } from 'react-dom';
-import { MAIN_CONTENT_ID } from '../../App';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ToastProps {
   showDuration?: number;
@@ -26,15 +26,21 @@ const variantStyles: Record<Variant, string> = {
   info: '',
   success: 'bg-green-600',
   warning: '',
-  default: 'bg-slate-50',
+  default: 'bg-slate-50 text-slate-900',
 };
 
 const SHOW_TOAST_ACTION = 'SHOW_TOAST';
 const HIDE_TOAST_ACTION = 'HIDE_TOAST';
 
-// eslint-disable-next-line
-// @ts-ignore
-function reducer(state, action) {
+type ToastActions =
+  | { type: typeof SHOW_TOAST_ACTION; payload: string }
+  | { type: typeof HIDE_TOAST_ACTION };
+
+type ToastState = { isOpen: boolean; message: string };
+
+export type ToastRef = { show: (text: string) => void };
+
+const reducer: Reducer<ToastState, ToastActions> = (state, action) => {
   switch (action.type) {
     case SHOW_TOAST_ACTION:
       return {
@@ -49,7 +55,7 @@ function reducer(state, action) {
     default:
       return state;
   }
-}
+};
 
 export const Toast = forwardRef(function (
   {
@@ -72,13 +78,13 @@ export const Toast = forwardRef(function (
   useImperativeHandle(ref, () => ({ show }));
 
   const handleClose = useCallback(() => {
+    dispatch({ type: HIDE_TOAST_ACTION });
     onDismiss();
   }, [onDismiss]);
 
   useEffect(() => {
     if (isOpen) {
       const timeoutId = setTimeout(() => {
-        dispatch({ type: HIDE_TOAST_ACTION });
         handleClose();
       }, showDuration);
 
@@ -88,19 +94,27 @@ export const Toast = forwardRef(function (
     }
   }, [isOpen, handleClose, showDuration]);
 
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div id='toast' className={classNames('toast', variantStyles[variant])}>
-      <span id='toastMessage' className=''>
-        {message}
-      </span>
-      {dismissible && (
-        <button onClick={handleClose}>
-          <CloseIcon />
-        </button>
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          id='toast'
+          className={classNames('toast', variantStyles[variant])}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          key='toast'
+        >
+          <span id='toastMessage' className=''>
+            {message}
+          </span>
+          {dismissible && (
+            <button className='absolute top-1 right-1' onClick={handleClose}>
+              <CloseIcon />
+            </button>
+          )}
+        </motion.div>
       )}
-    </div>,
-    document.getElementById(MAIN_CONTENT_ID)!
+    </AnimatePresence>
   );
 });
