@@ -42,10 +42,23 @@ function evaluateGuess(guess: string, word: string): Guess {
   }, [] as Guess);
 }
 
+function createsGuessesInitialState(): Guess[] {
+  return Array<Guess>(AMOUNT_OF_GUESSES).fill(
+    Array<GuessLetter>(WORD_LENGTH).fill({ letter: '', status: 'COVERED' })
+  );
+}
+
+function hasRemainingGuesses(guesses: Guess[]): boolean {
+  return guesses.some((guess) =>
+    guess.find((guessLetter) => guessLetter.status === 'COVERED')
+  );
+}
+
+// todo try having a state for the amount of guesses made given that the array of guesses now includes unused guesses and can't be used to derive game state
 function Game() {
   const [word, setWord] = useState(getRandomWord(words));
   const [currentGuess, setCurrentGuess] = useState('');
-  const [guesses, setGuesses] = useState<Guess[]>([]);
+  const [guesses, setGuesses] = useState<Guess[]>(createsGuessesInitialState);
   const toastRef = useRef<ToastRef | null>(null);
 
   const status: GameStatus = useMemo(() => {
@@ -53,7 +66,7 @@ function Game() {
 
     if (hasWon) return 'WON';
 
-    if (guesses.length === AMOUNT_OF_GUESSES) return 'LOST';
+    if (!hasRemainingGuesses(guesses)) return 'LOST';
 
     return 'PLAYING';
   }, [word, guesses]);
@@ -92,7 +105,7 @@ function Game() {
 
   return (
     <section className='pt-4 max-w-lg mx-auto flex flex-col gap-4'>
-      <Guesses word={word} guesses={guesses} />
+      <Guesses guesses={guesses} />
       {status === 'PLAYING' && (
         <div className='flex flex-col gap-4'>
           <form onSubmit={handleSubmitGuess}>
@@ -111,8 +124,8 @@ function Game() {
           </form>
         </div>
       )}
-      {status === 'won' && <div className='flex flex-col gap-4'>You won!</div>}
-      {status === 'lost' && (
+      {status === 'WON' && <div className='flex flex-col gap-4'>You won!</div>}
+      {status === 'LOST' && (
         <div className='flex flex-col gap-4'>You lost! The word was {word}</div>
       )}
       <button onClick={handleGameReset}>Reset Game</button>
@@ -122,10 +135,8 @@ function Game() {
 }
 
 function Guesses({ guesses }: { guesses: Guess[] }) {
-  return [
-    ...Array.from({ length: AMOUNT_OF_GUESSES }, (_, index) => index + 1),
-  ].map((num: number, i) => {
-    return <Guess key={num} guess={guesses[i]} />;
+  return guesses.map((guess, i) => {
+    return <Guess key={i} guess={guess} />;
   });
 }
 
