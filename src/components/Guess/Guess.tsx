@@ -1,59 +1,51 @@
-import classNames from "classnames";
-import { WORD_LENGTH } from "../../App";
+import classNames from 'classnames';
+import { WORD_LENGTH } from '../../App';
 
 // LetterMatch?
-type LetterStatus = "MISPLACED" | "CORRECT" | "INCORRECT" | "COVERED";
+export type LetterStatus = 'MISPLACED' | 'IN_PLACE' | 'NOT_IN_WORD' | 'COVERED';
 
 const LetterStatusStyleMap: Record<LetterStatus, string> = {
-	CORRECT: "bg-lime-300",
-	COVERED: "bg-transparent",
-	INCORRECT: "bg-red-500",
-	MISPLACED: "bg-amber-400 ",
+  IN_PLACE: 'bg-lime-300',
+  MISPLACED: 'bg-amber-400',
+  NOT_IN_WORD: 'bg-zinc-500',
+  // "UNUSED"?
+  COVERED: 'bg-transparent',
 };
 
 function GuessLetter({
-	letter,
-	letterStatus,
+  letter,
+  letterStatus,
 }: {
-	letter: string;
-	letterStatus: LetterStatus;
+  letter: string;
+  letterStatus: LetterStatus;
 }) {
-	return (
-		<div
-			className={classNames("guess-letter", LetterStatusStyleMap[letterStatus])}
-		>
-			<span className="align-middle">{letter}</span>
-		</div>
-	);
+  return (
+    <div
+      className={classNames('guess-letter', LetterStatusStyleMap[letterStatus])}
+    >
+      <span className='align-middle'>{letter}</span>
+    </div>
+  );
 }
 
-export function Guess({
-	guess,
-	getLetterStatusInWord,
-}: {
-	guess: string;
-	getLetterStatusInWord(letter: string): LetterStatus;
-}) {
-	let content;
-	if (!guess) {
-		content = [
-			...Array.from({ length: WORD_LENGTH }, (_, index) => index + 1),
-		].map((_: number, i) => {
-			return (
-				<GuessLetter letter="" key={i} letterStatus="COVERED"></GuessLetter>
-			);
-		});
-	} else {
-		content = guess.split("").map((letter: string, i) => {
-			return (
-				<GuessLetter
-					key={i}
-					letter={letter}
-					letterStatus={getLetterStatusInWord(letter)}
-				/>
-			);
-		});
-	}
+export type GuessLetter = { letter: string; status: LetterStatus };
+export type Guess = Array<GuessLetter>;
 
-	return <div className="flex justify-center gap-4">{content}</div>;
+export function Guess({ guess }: { guess: Guess }) {
+  let content;
+  if (guess.length === 0) {
+    content = [
+      ...Array.from({ length: WORD_LENGTH }, (_, index) => index + 1),
+    ].map((_: number, i) => {
+      return (
+        <GuessLetter letter='' key={i} letterStatus='COVERED'></GuessLetter>
+      );
+    });
+  } else {
+    content = guess.map(({ letter, status }, i) => {
+      return <GuessLetter key={i} letter={letter} letterStatus={status} />;
+    });
+  }
+
+  return <div className='flex justify-center gap-4'>{content}</div>;
 }
