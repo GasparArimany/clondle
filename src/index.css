@@ -3,23 +3,23 @@
 @tailwind utilities;
 
 .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-  white-space: nowrap;
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	border: 0;
+	white-space: nowrap;
 }
 
 @layer components {
-  .toast {
-    @apply absolute w-64 px-4 py-4 rounded-sm top-2 left-[50%] translate-x-[-50%];
-  }
+	.toast {
+		@apply absolute w-64 px-4 py-4 rounded-sm top-2 left-[50%] translate-x-[-50%];
+	}
 
-  .guess-letter {
-    @apply inline-block align-middle text-center text-2xl font-bold py-2 px-2 size-14 border-2 border-white;
-  }
+	.guess-letter {
+		@apply inline-block text-center text-2xl font-bold py-2 px-2 size-14 border-2 border-white;
+	}
 }
