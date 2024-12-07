@@ -1,14 +1,12 @@
 import classNames from 'classnames';
 
-// LetterMatch?
-export type LetterStatus = 'MISPLACED' | 'IN_PLACE' | 'NOT_IN_WORD' | 'COVERED';
+export type LetterStatus = 'MISPLACED' | 'IN_PLACE' | 'NOT_IN_WORD' | 'EMPTY';
 
 const LetterStatusStyleMap: Record<LetterStatus, string> = {
-  IN_PLACE: 'bg-lime-300',
+  IN_PLACE: 'bg-lime-600',
   MISPLACED: 'bg-amber-400',
   NOT_IN_WORD: 'bg-zinc-500',
-  // "UNUSED"?
-  COVERED: 'bg-transparent',
+  EMPTY: 'bg-transparent',
 };
 
 function GuessLetter({
