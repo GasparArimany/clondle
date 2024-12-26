@@ -1,4 +1,4 @@
-import { useState, useReducer, useRef, useMemo, useCallback } from "react";
+import { useState, useReducer, useRef, useMemo, useCallback, useEffect } from "react";
 import { GameState } from "../../models/GameState";
 import { getRandomWord } from "../../utils";
 import { evaluateGuess } from "../../utils/evaluateGuess";
@@ -25,10 +25,7 @@ function createGuessesInitialState(): GuessesState {
 	};
 }
 
-function GuessesReducer(
-	state: GuessesState,
-	action: GuessesStateActions
-): GuessesState {
+function GuessesReducer(state: GuessesState, action: GuessesStateActions): GuessesState {
 	switch (action.type) {
 		case "ADD_GUESS": {
 			const newGuesses = [...state.guesses];
@@ -75,37 +72,39 @@ export function Game() {
 		dispatch({ type: "CLEAR" });
 	}, []);
 
-	const handleSubmitGuess: React.FormEventHandler<HTMLFormElement> =
-		useCallback(
-			(e) => {
-				e.preventDefault();
+	const handleSubmitGuess: React.FormEventHandler<HTMLFormElement> = useCallback(
+		(e) => {
+			e.preventDefault();
 
-				if (currentGuess.length !== WORD_LENGTH) {
-					toastRef.current?.show(`guess must be ${WORD_LENGTH} letters long`);
-					return;
-				}
-
-				if (!words.includes(currentGuess)) {
-					toastRef.current?.show(`guess is not a word`);
-					return;
-				}
-
-				const evaluatedGuess = evaluateGuess(currentGuess, wordLettersMap);
-
-				dispatch({ type: "ADD_GUESS", payload: evaluatedGuess });
-			},
-			[currentGuess, wordLettersMap]
-		);
-
-	const handleCurrentGuessChange: React.ChangeEventHandler<HTMLInputElement> =
-		useCallback((e) => {
-			const guess = e.currentTarget.value;
-			if (guess.length > 5) {
+			if (currentGuess.length !== WORD_LENGTH) {
+				toastRef.current?.show(`guess must be ${WORD_LENGTH} letters long`);
 				return;
 			}
 
-			setCurrentGuess(guess);
-		}, []);
+			if (!words.includes(currentGuess)) {
+				toastRef.current?.show(`guess is not a word`);
+				return;
+			}
+
+			const evaluatedGuess = evaluateGuess(currentGuess, wordLettersMap);
+
+			dispatch({ type: "ADD_GUESS", payload: evaluatedGuess });
+		},
+		[currentGuess, wordLettersMap]
+	);
+
+	const handleCurrentGuessChange: React.ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+		const guess = e.currentTarget.value;
+		if (guess.length > 5) {
+			return;
+		}
+
+		setCurrentGuess(guess);
+	}, []);
+
+	useEffect(() => {
+		console.log(word);
+	}, []);
 
 	return (
 		<section className="pt-4 max-w-lg mx-auto flex flex-col gap-4">
@@ -128,9 +127,7 @@ export function Game() {
 					</form>
 				</div>
 			)}
-			{gameState === "WON" && (
-				<div className="flex flex-col gap-4">You won!</div>
-			)}
+			{gameState === "WON" && <div className="flex flex-col gap-4">You won!</div>}
 			{gameState === "LOST" && (
 				<div className="flex flex-col gap-4">You lost! The word was {word}</div>
 			)}
