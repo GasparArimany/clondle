@@ -1,11 +1,10 @@
 import { useState, useReducer, useRef, useMemo, useCallback } from "react";
 import { GameState } from "../../models/GameState";
 import { getRandomWord } from "../../utils";
-import { evaluateGuess } from "../../utils/evaluateGuess";
 import { words } from "../../words";
 import { Guesses } from "../Guesses/Guesses";
 import { ToastRef, Toast } from "../Toast/Toast";
-import { Guess, GuessLetter } from "../../models/Guess";
+import { Guess } from "../../models/Guess";
 import { createLettersStatsMap } from "../../utils/createLettersStatsMap";
 import { AMOUNT_OF_GUESSES, WORD_LENGTH } from "../../constants";
 import Keyboard from "../Keyboard/Keyboard";
@@ -20,9 +19,7 @@ type GuessesStateActions = ClearGuessAction | AddGuessAction;
 function createGuessesInitialState(): GuessesState {
 	return {
 		guessCount: 0,
-		guesses: Array<Guess>(AMOUNT_OF_GUESSES).fill(
-			Array<GuessLetter>(WORD_LENGTH).fill({ letter: "", status: "EMPTY" })
-		),
+		guesses: Array<Guess>(AMOUNT_OF_GUESSES).fill(new Guess()),
 	};
 }
 
@@ -46,7 +43,7 @@ function GuessesReducer(state: GuessesState, action: GuessesStateActions): Guess
 
 export function Game() {
 	const [word, setWord] = useState(getRandomWord(words));
-	const [currentGuess, setCurrentGuess] = useState("");
+	const [currentGuess, setCurrentGuess] = useState<Guess>(new Guess());
 
 	const [{ guesses, guessCount }, dispatch] = useReducer(
 		GuessesReducer,
@@ -59,7 +56,7 @@ export function Game() {
 	const wordLettersMap = useMemo(() => createLettersStatsMap(word), [word]);
 
 	const gameState: GameState = useMemo(() => {
-		const hasWon = guesses.some((guess) => guess.join() === word);
+		const hasWon = guesses.some((guess) => guess.toString() === word);
 
 		if (hasWon) return "WON";
 
@@ -74,18 +71,19 @@ export function Game() {
 	}, []);
 
 	const handleSubmitGuess = useCallback(() => {
-		const evaluatedGuess = evaluateGuess(currentGuess, wordLettersMap);
+		const evaluatedGuess = currentGuess.evaluateGuess(wordLettersMap);
 
+		setCurrentGuess(new Guess());
 		dispatch({ type: "ADD_GUESS", payload: evaluatedGuess });
 	}, [currentGuess, wordLettersMap]);
 
 	const handleValidateGuess = useCallback(() => {
-		if (currentGuess.length !== WORD_LENGTH) {
+		if (currentGuess.toString().length !== WORD_LENGTH) {
 			toastRef.current?.show(`guess must be ${WORD_LENGTH} letters long`);
 			return false;
 		}
 
-		if (!words.includes(currentGuess)) {
+		if (!words.includes(currentGuess.toString())) {
 			toastRef.current?.show(`guess is not a word`);
 			return false;
 		}
@@ -93,13 +91,20 @@ export function Game() {
 		return true;
 	}, [currentGuess]);
 
-	const handleCurrentGuessChange = useCallback((content: string) => {
-		setCurrentGuess(content);
+	const handleCurrentGuessChange = useCallback((newGuess: string) => {
+		setCurrentGuess(new Guess(newGuess));
 	}, []);
+
+	const shownGuesses = useMemo(() => {
+		const result = guesses.slice();
+		result[guessCount] = currentGuess;
+
+		return result;
+	}, [guesses, currentGuess, guessCount]);
 
 	return (
 		<section className="pt-4 max-w-lg mx-auto flex flex-col gap-4">
-			<Guesses guesses={guesses} />
+			<Guesses guesses={shownGuesses} />
 			{gameState === "PLAYING" && (
 				<Keyboard
 					onSubmit={handleSubmitGuess}

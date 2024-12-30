@@ -8,18 +8,10 @@ const LetterStatusStyleMap: Record<LetterStatus, string> = {
 	EMPTY: "bg-transparent",
 };
 
-function GuessLetter({
-	letter,
-	letterStatus,
-}: {
-	letter: string;
-	letterStatus: LetterStatus;
-}) {
+function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: LetterStatus }) {
 	return (
-		<div
-			className={classNames("guess-letter", LetterStatusStyleMap[letterStatus])}
-		>
-			<span className="">{letter}</span>
+		<div className={classNames("guess-letter", LetterStatusStyleMap[letterStatus])}>
+			<span className="text-center">{letter.toUpperCase()}</span>
 		</div>
 	);
 }
@@ -27,7 +19,7 @@ function GuessLetter({
 export function GuessWord({ guess }: { guess: Guess }) {
 	return (
 		<div className="flex justify-center gap-4">
-			{guess.map(({ letter, status }, i) => {
+			{guess.letters.map(({ letter, status }, i) => {
 				return <GuessLetter key={i} letter={letter} letterStatus={status} />;
 			})}
 		</div>
