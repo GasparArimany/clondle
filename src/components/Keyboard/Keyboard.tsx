@@ -1,3 +1,6 @@
+import { useCallback, useEffect, useState } from "react";
+import { LetterStatus } from "../../models/Guess";
+
 const keys = [
 	"Q",
 	"W",
@@ -25,16 +28,82 @@ const keys = [
 	"B",
 	"N",
 	"M",
-];
+] as const;
 
-function Keyboard() {
+type Letter = (typeof keys)[number];
+
+type KeyboardProps = {
+	onSubmit: (content: string) => void;
+	onChange: (content: string) => void;
+	lettersStateMap: Map<Letter, LetterStatus>;
+	onValidate?: (content: string) => boolean;
+	maxLength?: number;
+};
+
+function Keyboard({ onSubmit, onChange, maxLength, onValidate = () => true }: KeyboardProps) {
+	const [content, setContent] = useState("");
+
+	const submit = useCallback(() => {
+		if (onValidate(content)) {
+			setContent("");
+			onSubmit(content);
+		}
+	}, [onSubmit, content, onValidate]);
+
+	const handleChange = useCallback(
+		(pressedKey: string) => {
+			let newContent = "";
+			if (pressedKey === "Enter") {
+				return;
+			} else if (pressedKey === "Backspace") {
+				newContent = content.slice(0, -1);
+			} else if (!/^[a-zA-Z]$/.test(pressedKey)) {
+				return;
+			} else {
+				if (maxLength && maxLength <= content.length) {
+					return;
+				}
+				newContent = content + pressedKey;
+			}
+
+			setContent(newContent);
+			onChange(newContent);
+		},
+		[onChange, content, maxLength]
+	);
+
+	const handleSubmit: React.FormEventHandler<HTMLFormElement> = useCallback(
+		(e) => {
+			e.preventDefault();
+			submit();
+		},
+		[submit]
+	);
+
+	useEffect(() => {
+		const handleKeyUp = (event: KeyboardEvent) => {
+			if (event.key === "Enter") {
+				submit();
+				return;
+			}
+			handleChange(event.key);
+		};
+
+		document.body.addEventListener("keyup", handleKeyUp);
+
+		return () => {
+			document.body.removeEventListener("keyup", handleKeyUp);
+		};
+	}, [handleChange, submit]);
+
 	return (
-		<div className="flex flex-col items-center space-y-2">
+		<form onSubmit={handleSubmit} className="flex flex-col items-center space-y-2">
 			<div className="flex space-x-1">
 				{keys.slice(0, 10).map((key) => (
 					<button
 						key={key}
-						className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+						type="button"
+						className="size-12 text-center bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
 					>
 						{key}
 					</button>
@@ -44,7 +113,8 @@ function Keyboard() {
 				{keys.slice(10, 19).map((key) => (
 					<button
 						key={key}
-						className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+						type="button"
+						className="size-12 text-center bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
 					>
 						{key}
 					</button>
@@ -54,13 +124,28 @@ function Keyboard() {
 				{keys.slice(19).map((key) => (
 					<button
 						key={key}
-						className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+						type="button"
+						className="size-12 text-center bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
 					>
 						{key}
 					</button>
 				))}
 			</div>
-		</div>
+			<input
+				/**
+				 * stopPropagation is for users pressing enter while focused on the input
+				 * the submit event is fired on the form, and the keyup event is stopped from propagating to the handler in the body
+				 */
+				onKeyUp={(e) => {
+					if (e.key === "Enter") {
+						e.stopPropagation();
+					}
+				}}
+				value={"Submit"}
+				type="submit"
+				className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+			/>
+		</form>
 	);
 }
 
