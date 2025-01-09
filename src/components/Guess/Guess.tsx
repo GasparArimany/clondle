@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import type { Guess, LetterStatus } from "../../models/Guess";
+import { motion, MotionConfig, stagger } from "motion/react";
 
 const LetterStatusStyleMap: Record<LetterStatus, string> = {
 	IN_PLACE: "bg-lime-600",
@@ -9,10 +10,23 @@ const LetterStatusStyleMap: Record<LetterStatus, string> = {
 };
 
 function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: LetterStatus }) {
+	const boxAnimation = {
+		...(letter !== "" ? { scale: ["85%", "100%"] } : { scale: ["115%", "100%"] }),
+		...(letterStatus === "EMPTY" ? { rotateX: [0, 0] } : { rotateX: [0, 180] }),
+	};
+
+	const statusAnimation = {
+		...(letterStatus === "MISPLACED" ? { backgroundColor: ["#e6d32c00", "#e6d32c"] } : {}),
+		...(letterStatus === "NOT_IN_WORD" ? { backgroundColor: ["#8d8f8e00", "#8d8f8e"] } : {}),
+		...(letterStatus === "IN_PLACE" ? { backgroundColor: ["#32a85200", "#32a852"] } : {}),
+	};
+
 	return (
-		<div className={classNames("guess-letter", LetterStatusStyleMap[letterStatus])}>
-			<span className="text-center">{letter.toUpperCase()}</span>
-		</div>
+		<motion.div initial={false} animate={boxAnimation} className="guess-letter">
+			<motion.div animate={statusAnimation} className="h-full p-2">
+				<span className="text-center">{letter.toUpperCase()}</span>
+			</motion.div>
+		</motion.div>
 	);
 }
 
