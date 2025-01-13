@@ -16,28 +16,35 @@ function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: L
 
 	const hasLetter = letter !== "";
 
-	const boxAnimation = {
-		...(hasLetter ? { scale: ["85%", "100%"] } : { scale: ["115%", "100%"] }),
-		...rotateAnimation,
-	};
-
 	const statusAnimation = {
 		// TODO: use tailwind variables
 		...(letterStatus === "IN_PLACE" ? { backgroundColor: ["#32a85200", "#32a852"] } : {}),
 		...(letterStatus === "MISPLACED" ? { backgroundColor: ["#e6d32c00", "#e6d32c"] } : {}),
 		...(letterStatus === "NOT_IN_WORD" ? { backgroundColor: ["#8d8f8e00", "#8d8f8e"] } : {}),
-		...(letterStatus !== "EMPTY" ? { rotateY: [0] } : { rotateY: [180] }),
+		...(!faceDown ? { rotateY: [0] } : { rotateY: [180] }),
+	};
+
+	const variants = {
+		box: {
+			...(hasLetter ? { scale: ["85%", "100%"] } : { scale: ["115%", "100%"] }),
+			...{ transition: { duration: 0.3 } },
+		},
+		rotate: {
+			...rotateAnimation,
+			...{ transition: { duration: 1 } },
+		},
 	};
 
 	return (
-		<motion.div className="guess-letter" transition={{ duration: 0.7 }} animate={rotateAnimation}>
+		<motion.div className="guess-letter" transition={{ duration: 1 }} animate={rotateAnimation}>
 			<motion.div
+				initial={false}
 				className="h-full relative border-2 border-white"
-				transition={{ duration: 0.7 }}
-				animate={boxAnimation}
+				animate={["box", "rotate"]}
+				variants={variants}
 			>
 				<motion.div
-					transition={{ duration: 0.7 }}
+					transition={{ duration: 1 }}
 					animate={rotateAnimation}
 					className="h-full p-2"
 					style={{ backfaceVisibility: "hidden" }}
@@ -45,7 +52,7 @@ function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: L
 					<span className="text-center">{letter.toUpperCase()}</span>
 				</motion.div>
 				<motion.div
-					transition={{ duration: 0.7 }}
+					transition={{ duration: 1 }}
 					initial={{ rotateY: 180 }}
 					animate={statusAnimation}
 					style={{ backfaceVisibility: "hidden" }}
