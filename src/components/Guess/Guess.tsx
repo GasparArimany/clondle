@@ -10,11 +10,16 @@ import { motion } from "motion/react";
 // };
 
 function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: LetterStatus }) {
-	// const boxAnimation = {
-	// 	...(letter !== "" ? { scale: ["85%", "100%"] } : { scale: ["115%", "100%"] }),
-	// };
+	const faceDown = letterStatus === "EMPTY";
 
-	const filp = letterStatus === "EMPTY";
+	const rotateAnimation = faceDown ? { rotateY: 0 } : { rotateY: 180 };
+
+	const hasLetter = letter !== "";
+
+	const boxAnimation = {
+		...(hasLetter ? { scale: ["85%", "100%"] } : { scale: ["115%", "100%"] }),
+		...rotateAnimation,
+	};
 
 	const statusAnimation = {
 		// TODO: use tailwind variables
@@ -25,20 +30,16 @@ function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: L
 	};
 
 	return (
-		<motion.div
-			className="guess-letter"
-			transition={{ duration: 0.7 }}
-			animate={filp ? { rotateY: 0 } : { rotateY: 180 }}
-		>
+		<motion.div className="guess-letter" transition={{ duration: 0.7 }} animate={rotateAnimation}>
 			<motion.div
-				className="h-full relative"
+				className="h-full relative border-2 border-white"
 				transition={{ duration: 0.7 }}
-				animate={filp ? { rotateY: 0 } : { rotateY: 180 }}
+				animate={boxAnimation}
 			>
 				<motion.div
 					transition={{ duration: 0.7 }}
-					animate={filp ? { rotateY: 0 } : { rotateY: 180 }}
-					className="h-full p-2 border-2 border-white"
+					animate={rotateAnimation}
+					className="h-full p-2"
 					style={{ backfaceVisibility: "hidden" }}
 				>
 					<span className="text-center">{letter.toUpperCase()}</span>
@@ -48,7 +49,7 @@ function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: L
 					initial={{ rotateY: 180 }}
 					animate={statusAnimation}
 					style={{ backfaceVisibility: "hidden" }}
-					className="h-full p-2 border-2 border-white absolute top-0 w-full"
+					className="h-full p-2 absolute top-0 left-0 w-full"
 				>
 					<span className="text-center">{letter.toUpperCase()}</span>
 				</motion.div>
