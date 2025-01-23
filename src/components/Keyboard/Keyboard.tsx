@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { LetterStatus } from "../../models/Guess";
+import classNames from "classnames";
 
 const keys = [
 	"Q",
@@ -30,17 +31,31 @@ const keys = [
 	"M",
 ] as const;
 
-type Letter = (typeof keys)[number];
+// type Letter = (typeof keys)[number];
+
+const letterStatusClassMap: Record<LetterStatus, string> = {
+	IN_PLACE: "bg-lime-600",
+	MISPLACED: "bg-amber-400",
+	NOT_IN_WORD: "bg-zinc-500",
+	// TODO fix
+	EMPTY: "",
+};
 
 type KeyboardProps = {
 	onSubmit: (content: string) => void;
 	onChange: (content: string) => void;
-	lettersStateMap: Map<Letter, LetterStatus>;
+	lettersStateMap: Map<string, LetterStatus>;
 	onValidate?: (content: string) => boolean;
 	maxLength?: number;
 };
 
-function Keyboard({ onSubmit, onChange, maxLength, onValidate = () => true }: KeyboardProps) {
+function Keyboard({
+	onSubmit,
+	onChange,
+	maxLength,
+	onValidate = () => true,
+	lettersStateMap,
+}: KeyboardProps) {
 	const [content, setContent] = useState("");
 
 	const submit = useCallback(() => {
@@ -99,37 +114,48 @@ function Keyboard({ onSubmit, onChange, maxLength, onValidate = () => true }: Ke
 	return (
 		<form onSubmit={handleSubmit} className="flex flex-col items-center space-y-2">
 			<div className="flex space-x-1">
-				{keys.slice(0, 10).map((key) => (
-					<button
-						key={key}
-						type="button"
-						className="size-12 text-center bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
-					>
-						{key}
-					</button>
-				))}
+				{keys.slice(0, 10).map((key) => {
+					const status = lettersStateMap.get(key.toLowerCase()) || "EMPTY";
+					return (
+						<button
+							key={key}
+							type="button"
+							className={classNames("keyboard-letter", letterStatusClassMap[status])}
+						>
+							{key}
+						</button>
+					);
+				})}
 			</div>
 			<div className="flex space-x-1">
-				{keys.slice(10, 19).map((key) => (
-					<button
-						key={key}
-						type="button"
-						className="size-12 text-center bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
-					>
-						{key}
-					</button>
-				))}
+				{keys.slice(10, 19).map((key) => {
+					const status = lettersStateMap.get(key.toLowerCase()) || "EMPTY";
+
+					return (
+						<button
+							key={key}
+							type="button"
+							className={classNames("keyboard-letter", letterStatusClassMap[status])}
+						>
+							{key}
+						</button>
+					);
+				})}
 			</div>
 			<div className="flex space-x-1">
-				{keys.slice(19).map((key) => (
-					<button
-						key={key}
-						type="button"
-						className="size-12 text-center bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
-					>
-						{key}
-					</button>
-				))}
+				{keys.slice(19).map((key) => {
+					const status = lettersStateMap.get(key.toLowerCase()) || "EMPTY";
+
+					return (
+						<button
+							key={key}
+							type="button"
+							className={classNames("keyboard-letter", letterStatusClassMap[status])}
+						>
+							{key}
+						</button>
+					);
+				})}
 			</div>
 			<input
 				/**

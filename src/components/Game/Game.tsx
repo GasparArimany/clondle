@@ -1,10 +1,10 @@
 import { useState, useReducer, useRef, useMemo, useCallback } from "react";
 import { GameState } from "../../models/GameState";
 import { getRandomWord } from "../../utils";
-import { words } from "../../words";
+import { wordList } from "../../words2";
 import { Guesses } from "../Guesses/Guesses";
 import { ToastRef, Toast } from "../Toast/Toast";
-import { Guess } from "../../models/Guess";
+import { Guess, LetterStatus } from "../../models/Guess";
 import { createLettersStatsMap } from "../../utils/createLettersStatsMap";
 import { AMOUNT_OF_GUESSES, WORD_LENGTH } from "../../constants";
 import Keyboard from "../Keyboard/Keyboard";
@@ -42,7 +42,7 @@ function GuessesReducer(state: GuessesState, action: GuessesStateActions): Guess
 }
 
 export function Game() {
-	const [word, setWord] = useState(getRandomWord(words));
+	const [word, setWord] = useState(getRandomWord(wordList));
 	const [currentGuess, setCurrentGuess] = useState<Guess>(new Guess());
 
 	const [{ guesses, guessCount }, dispatch] = useReducer(
@@ -66,7 +66,7 @@ export function Game() {
 	}, [word, guesses, guessCount]);
 
 	const handleGameReset = useCallback(() => {
-		setWord(getRandomWord(words));
+		setWord(getRandomWord(wordList));
 		dispatch({ type: "CLEAR" });
 	}, []);
 
@@ -83,7 +83,7 @@ export function Game() {
 			return false;
 		}
 
-		if (!words.includes(currentGuess.toString())) {
+		if (!wordList.includes(currentGuess.toString())) {
 			toastRef.current?.show(`guess is not a word`);
 			return false;
 		}
@@ -102,13 +102,22 @@ export function Game() {
 		return result;
 	}, [guesses, currentGuess, guessCount]);
 
+	const lettersStateMap = guesses.reduce((acc, guess) => {
+		guess.letters.forEach(({ letter, status }) => {
+			if (acc.has(letter) && acc.get(letter) === "IN_PLACE") return;
+
+			acc.set(letter, status);
+		});
+		return acc;
+	}, new Map<string, LetterStatus>());
+
 	return (
 		<section className="pt-4 max-w-lg mx-auto flex flex-col gap-4">
 			<Guesses guesses={shownGuesses} />
 			{gameState === "PLAYING" && (
 				<Keyboard
 					onSubmit={handleSubmitGuess}
-					lettersStateMap={new Map()}
+					lettersStateMap={lettersStateMap}
 					onChange={handleCurrentGuessChange}
 					onValidate={handleValidateGuess}
 					maxLength={WORD_LENGTH}
