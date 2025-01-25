@@ -44,6 +44,7 @@ function GuessesReducer(state: GuessesState, action: GuessesStateActions): Guess
 export function Game() {
 	const [word, setWord] = useState(getRandomWord(wordList));
 	const [currentGuess, setCurrentGuess] = useState<Guess>(new Guess());
+	// const [lettersStateMap, setLettersStateMap] = useState(new Map<string, LetterStatus>());
 
 	const [{ guesses, guessCount }, dispatch] = useReducer(
 		GuessesReducer,
@@ -67,12 +68,12 @@ export function Game() {
 
 	const handleGameReset = useCallback(() => {
 		setWord(getRandomWord(wordList));
+		setCurrentGuess(new Guess());
 		dispatch({ type: "CLEAR" });
 	}, []);
 
 	const handleSubmitGuess = useCallback(() => {
 		const evaluatedGuess = currentGuess.evaluateGuess(wordLettersMap);
-
 		setCurrentGuess(new Guess());
 		dispatch({ type: "ADD_GUESS", payload: evaluatedGuess });
 	}, [currentGuess, wordLettersMap]);
@@ -110,6 +111,18 @@ export function Game() {
 		});
 		return acc;
 	}, new Map<string, LetterStatus>());
+
+	// const handleKeyboardState = () => {
+	// 	const newLettersStateMap = guesses.reduce((acc, guess) => {
+	// 		guess.letters.forEach(({ letter, status }) => {
+	// 			if (acc.has(letter) && acc.get(letter) === "IN_PLACE") return;
+
+	// 			acc.set(letter, status);
+	// 		});
+	// 		return acc;
+	// 	}, new Map<string, LetterStatus>());
+	// 	setLettersStateMap(newLettersStateMap);
+	// };
 
 	return (
 		<section className="pt-4 max-w-lg mx-auto flex flex-col gap-4">

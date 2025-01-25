@@ -16,11 +16,11 @@
 
 @layer components {
 	.toast {
-		@apply absolute w-64 px-4 py-4 rounded-sm top-2 left-[50%] translate-x-[-50%];
+		@apply absolute w-64 p-4 rounded-sm top-2 left-[50%] translate-x-[-50%];
 	}
 
 	.guess-letter {
-		@apply inline-block text-center text-2xl font-bold size-14;
+		@apply inline-block text-center text-2xl font-bold size-14 p-2 border-2 border-white;
 	}
 
 	.keyboard-letter {
