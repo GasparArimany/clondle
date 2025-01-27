@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { Guess, LetterStatus } from "../../models/Guess";
-import { motion } from "framer-motion";
-import { useAnimate } from "motion/react-mini";
+import { motion, Variants, useAnimate } from "motion/react";
 
 const LetterStatusStyleMap: Record<LetterStatus, string> = {
 	IN_PLACE: "bg-lime-600",
@@ -28,10 +27,10 @@ function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: L
 		}
 	}, [animate, hasLetter, scope]);
 
-	const rotateVariants = {
+	const rotateVariants: Variants = {
 		unveil: (isFace: boolean) => ({
-			rotateX: isFace ? 180 : 0,
-			transition: { duration: 0.7 },
+			rotateX: isFace ? 90 : 0,
+			transition: { duration: 0.5, ease: "easeInOut" },
 		}),
 	};
 
@@ -63,7 +62,6 @@ export function GuessWord({ guess }: { guess: Guess }) {
 	const parentVariants = {
 		unveil: {
 			transition: {
-				delayChildren: 0.2,
 				staggerChildren: 0.2,
 			},
 		},
