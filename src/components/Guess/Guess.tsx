@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import type { Guess, LetterStatus } from "../../models/Guess";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
+import { useAnimate } from "motion/react-mini";
 
 const LetterStatusStyleMap: Record<LetterStatus, string> = {
 	IN_PLACE: "bg-lime-600",
@@ -9,60 +11,46 @@ const LetterStatusStyleMap: Record<LetterStatus, string> = {
 };
 
 function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: LetterStatus }) {
-	const faceDown = letterStatus === "EMPTY";
-
-	const rotateAnimation = faceDown ? { rotateY: 0 } : { rotateY: 180 };
-
 	const hasLetter = letter !== "";
+	const [scope, animate] = useAnimate();
+	const isMounted = useRef(false);
 
-	const statusAnimation = {
-		// TODO: use tailwind variables
-		// ...(letterStatus === "IN_PLACE" ? { backgroundColor: ["#32a85200", "#32a852"] } : {}),
-		// ...(letterStatus === "MISPLACED" ? { backgroundColor: ["#e6d32c00", "#e6d32c"] } : {}),
-		// ...(letterStatus === "NOT_IN_WORD" ? { backgroundColor: ["#8d8f8e00", "#8d8f8e"] } : {}),
-		...(!faceDown ? { rotateY: [0] } : { rotateY: [180] }),
-	};
+	useEffect(() => {
+		if (!isMounted.current) {
+			isMounted.current = true;
+			return;
+		}
 
-	const variants = {
-		box: {
-			...(hasLetter ? { scale: ["85%", "100%"] } : { scale: ["115%", "100%"] }),
-			...{ transition: { duration: 0.3 } },
-		},
-		faceUp: {
-			...(!faceDown ? { rotateY: 0 } : { rotateY: 180 }),
-			...{ transition: { duration: 1 } },
-		},
-		faceDown: {
-			...(faceDown ? { rotateY: 0 } : { rotateY: 180 }),
-			...{ transition: { duration: 1 } },
-		},
+		if (hasLetter) {
+			animate(scope.current, { scale: ["85%", "100%"] });
+		} else {
+			animate(scope.current, { scale: ["115%", "100%"] });
+		}
+	}, [animate, hasLetter, scope]);
+
+	const rotateVariants = {
+		unveil: (isFace: boolean) => ({
+			rotateX: isFace ? 180 : 0,
+			transition: { duration: 0.7 },
+		}),
 	};
 
 	return (
-		// <motion.div
-		// 	initial={false}
-		// 	className={`guess-letter relative border-2 border-white`}
-		// 	animate={["box", "rotate"]}
-		// 	variants={variants}
-		// >
-		// </motion.div>
 		<motion.div className="relative flex">
 			<motion.div
 				initial={false}
-				variants={variants}
-				animate={["faceDown", "box"]}
-				transition={{ duration: 1 }}
+				variants={rotateVariants}
+				custom={true}
+				ref={scope}
 				className="guess-letter"
 				style={{ backfaceVisibility: "hidden" }}
 			>
 				<span className="text-center">{letter.toUpperCase()}</span>
 			</motion.div>
 			<motion.div
-				variants={variants}
-				animate={["faceUp", "box"]}
-				transition={{ duration: 1 }}
-				// initial={{ rotateY: 180 }}
-				style={{ backfaceVisibility: "hidden", rotateY: 180 }}
+				variants={rotateVariants}
+				custom={false}
+				style={{ backfaceVisibility: "hidden", rotateX: 180 }}
 				className={`guess-letter absolute top-0 left-0 w-full ${LetterStatusStyleMap[letterStatus]}`}
 			>
 				<span className="text-center">{letter.toUpperCase()}</span>
@@ -72,22 +60,25 @@ function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: L
 }
 
 export function GuessWord({ guess }: { guess: Guess }) {
+	const parentVariants = {
+		unveil: {
+			transition: {
+				delayChildren: 0.2,
+				staggerChildren: 0.2,
+			},
+		},
+	};
+
 	return (
 		<motion.div
 			initial={false}
-			animate={guess.letters.some(({ status }) => status !== "EMPTY") ? "faceUp" : "faceDown"}
+			variants={parentVariants}
+			animate={guess.letters.some((letter) => letter.status !== "EMPTY") ? "unveil" : undefined}
+			className="flex justify-center gap-4"
 		>
-			<motion.div
-				variants={{
-					faceUp: { transition: { staggerChildren: 0.05, delayChildren: 0.2 } },
-					faceDown: { transition: { staggerChildren: 0.05, staggerDirection: -1 } },
-				}}
-				className="flex justify-center gap-4"
-			>
-				{guess.letters.map(({ letter, status }, i) => {
-					return <GuessLetter key={i} letter={letter} letterStatus={status} />;
-				})}
-			</motion.div>
+			{guess.letters.map(({ letter, status }, i) => {
+				return <GuessLetter key={i} letter={letter} letterStatus={status} />;
+			})}
 		</motion.div>
 	);
 }
