@@ -58,7 +58,7 @@ function GuessLetter({ letter, letterStatus }: { letter: string; letterStatus: L
 	);
 }
 
-export function GuessWord({ guess }: { guess: Guess }) {
+export function GuessWord({ guess, onUnveilEnded }: { guess: Guess; onUnveilEnded: VoidFunction }) {
 	const parentVariants = {
 		unveil: {
 			transition: {
@@ -71,8 +71,9 @@ export function GuessWord({ guess }: { guess: Guess }) {
 		<motion.div
 			initial={false}
 			variants={parentVariants}
-			animate={guess.letters.some((letter) => letter.status !== "EMPTY") ? "unveil" : undefined}
+			animate={guess.letters.some((letter) => letter.status !== "EMPTY") ? "unveil" : ""}
 			className="flex justify-center gap-4"
+			onAnimationComplete={onUnveilEnded}
 		>
 			{guess.letters.map(({ letter, status }, i) => {
 				return <GuessLetter key={i} letter={letter} letterStatus={status} />;

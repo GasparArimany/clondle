@@ -699,7 +699,7 @@ export const wordList = [
 	"faint",
 	"fairy",
 	"faith",
-	"FALSE",
+	"false",
 	"fancy",
 	"fanny",
 	"farce",
