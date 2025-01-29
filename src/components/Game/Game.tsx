@@ -85,7 +85,7 @@ export function Game() {
 		}
 
 		if (!wordList.includes(currentGuess.toString())) {
-			toastRef.current?.show(`guess is not a word`);
+			toastRef.current?.show(`${currentGuess.toString()} is not a word`);
 			return false;
 		}
 
