@@ -120,6 +120,7 @@ export function Game() {
 			<Guesses onUnveilEnded={handleUpdateKeyboardState} guesses={shownGuesses} />
 			{gameState === "PLAYING" && (
 				<Keyboard
+					key={word}
 					onSubmit={handleSubmitGuess}
 					lettersStateMap={lettersStateMap}
 					onChange={handleCurrentGuessChange}
