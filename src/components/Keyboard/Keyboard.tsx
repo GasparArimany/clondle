@@ -121,6 +121,7 @@ function Keyboard({
 							key={key}
 							type="button"
 							className={classNames("keyboard-letter", letterStatusClassMap[status])}
+							onClick={() => handleChange(key)}
 						>
 							{key}
 						</button>
@@ -136,6 +137,7 @@ function Keyboard({
 							key={key}
 							type="button"
 							className={classNames("keyboard-letter", letterStatusClassMap[status])}
+							onClick={() => handleChange(key)}
 						>
 							{key}
 						</button>
@@ -151,6 +153,7 @@ function Keyboard({
 							key={key}
 							type="button"
 							className={classNames("keyboard-letter", letterStatusClassMap[status])}
+							onClick={() => handleChange(key)}
 						>
 							{key}
 						</button>
