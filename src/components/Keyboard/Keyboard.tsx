@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { LetterStatus } from "../../models/Guess";
 import classNames from "classnames";
+import { Backspace } from "../Icons/Backspace";
 
 const keys = [
 	"Q",
@@ -159,6 +160,15 @@ function Keyboard({
 						</button>
 					);
 				})}
+				<button
+					type="button"
+					className="keyboard-letter w-10"
+					onClick={() => {
+						handleChange("Backspace");
+					}}
+				>
+					<Backspace />
+				</button>
 			</div>
 			<input
 				/**
