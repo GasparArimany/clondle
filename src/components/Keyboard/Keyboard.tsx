@@ -162,7 +162,7 @@ function Keyboard({
 				})}
 				<button
 					type="button"
-					className="keyboard-letter w-10"
+					className="keyboard-letter w-10 lg:w-14"
 					onClick={() => {
 						handleChange("Backspace");
 					}}
