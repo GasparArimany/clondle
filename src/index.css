@@ -24,6 +24,6 @@
 	}
 
 	.keyboard-letter {
-		@apply size-12 text-center bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded;
+		@apply w-8 h-12 text-center bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-2 rounded lg:size-12 lg:px-4;
 	}
 }

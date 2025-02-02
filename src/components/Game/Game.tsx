@@ -93,7 +93,7 @@ export function Game() {
 	}, [currentGuess]);
 
 	const handleCurrentGuessChange = useCallback((newGuess: string) => {
-		setCurrentGuess(new Guess(newGuess));
+		setCurrentGuess(new Guess(newGuess.toLowerCase()));
 	}, []);
 
 	const shownGuesses = useMemo(() => {
@@ -115,6 +115,12 @@ export function Game() {
 		setLettersStateMap(newLettersStateMap);
 	};
 
+	const handleResetKeyup = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+		if (e.key === "Enter") {
+			handleGameReset();
+		}
+	};
+
 	return (
 		<section className="pt-4 max-w-lg mx-auto flex flex-col gap-4">
 			<Guesses onUnveilEnded={handleUpdateKeyboardState} guesses={shownGuesses} />
@@ -132,7 +138,9 @@ export function Game() {
 			{gameState === "LOST" && (
 				<div className="flex flex-col gap-4">You lost! The word was {word}</div>
 			)}
-			<button onClick={handleGameReset}>Reset Game</button>
+			<button onClick={handleGameReset} onKeyUp={handleResetKeyup}>
+				Reset Game
+			</button>
 			<Toast ref={toastRef} />
 		</section>
 	);
