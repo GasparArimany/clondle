@@ -54,8 +54,6 @@ export function Game() {
 		createGuessesInitialState
 	);
 
-	console.log(word);
-
 	const toastRef = useRef<ToastRef | null>(null);
 
 	const wordLettersMap = useMemo(() => createLettersStatsMap(word), [word]);
