@@ -8,6 +8,7 @@ import { Guess, LetterStatus } from "../../models/Guess";
 import { createLettersStatsMap } from "../../utils/createLettersStatsMap";
 import { AMOUNT_OF_GUESSES, WORD_LENGTH } from "../../constants";
 import Keyboard from "../Keyboard/Keyboard";
+import ReactConfetti from "react-confetti";
 
 type GuessesState = { guessCount: number; guesses: Guess[] };
 
@@ -45,6 +46,7 @@ export function Game() {
 	const [word, setWord] = useState(getRandomWord(wordList));
 	const [currentGuess, setCurrentGuess] = useState<Guess>(new Guess());
 	const [lettersStateMap, setLettersStateMap] = useState(new Map<string, LetterStatus>());
+	const [gameState, setGameState] = useState<GameState>("PLAYING");
 
 	const [{ guesses, guessCount }, dispatch] = useReducer(
 		GuessesReducer,
@@ -52,23 +54,16 @@ export function Game() {
 		createGuessesInitialState
 	);
 
+	console.log(word);
+
 	const toastRef = useRef<ToastRef | null>(null);
 
 	const wordLettersMap = useMemo(() => createLettersStatsMap(word), [word]);
 
-	const gameState: GameState = useMemo(() => {
-		const hasWon = guesses.some((guess) => guess.toString() === word);
-
-		if (hasWon) return "WON";
-
-		if (guessCount === AMOUNT_OF_GUESSES) return "LOST";
-
-		return "PLAYING";
-	}, [word, guesses, guessCount]);
-
 	const handleGameReset = useCallback(() => {
 		setWord(getRandomWord(wordList));
 		setCurrentGuess(new Guess());
+		setGameState("PLAYING");
 		dispatch({ type: "CLEAR" });
 	}, []);
 
@@ -103,7 +98,7 @@ export function Game() {
 		return result;
 	}, [guesses, currentGuess, guessCount]);
 
-	const handleUpdateKeyboardState = () => {
+	const handleUnveilEnded = () => {
 		const newLettersStateMap = guesses.reduce((acc, guess) => {
 			guess.letters.forEach(({ letter, status }) => {
 				if (acc.has(letter) && acc.get(letter) === "IN_PLACE") return;
@@ -113,17 +108,26 @@ export function Game() {
 			return acc;
 		}, new Map<string, LetterStatus>());
 		setLettersStateMap(newLettersStateMap);
+
+		const hasWon = guesses[guessCount - 1].toString() === word;
+
+		if (hasWon) {
+			setGameState("WON");
+		} else if (guessCount === AMOUNT_OF_GUESSES) {
+			setGameState("LOST");
+		}
 	};
 
 	const handleResetKeyup = (e: React.KeyboardEvent<HTMLButtonElement>) => {
 		if (e.key === "Enter") {
+			e.stopPropagation();
 			handleGameReset();
 		}
 	};
 
 	return (
 		<section className="pt-4 max-w-lg mx-auto flex flex-col gap-4">
-			<Guesses onUnveilEnded={handleUpdateKeyboardState} guesses={shownGuesses} />
+			<Guesses onUnveilEnded={handleUnveilEnded} guesses={shownGuesses} />
 			{gameState === "PLAYING" && (
 				<Keyboard
 					key={word}
@@ -142,6 +146,7 @@ export function Game() {
 				Reset Game
 			</button>
 			<Toast ref={toastRef} />
+			{gameState === "WON" && <ReactConfetti />}
 		</section>
 	);
 }
