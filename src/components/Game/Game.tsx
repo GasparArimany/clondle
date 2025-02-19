@@ -9,6 +9,7 @@ import { createLettersStatsMap } from "../../utils/createLettersStatsMap";
 import { AMOUNT_OF_GUESSES, WORD_LENGTH } from "../../constants";
 import Keyboard from "../Keyboard/Keyboard";
 import ReactConfetti from "react-confetti";
+import { useWindowSize } from "../../hooks/useWindowSize";
 
 type GuessesState = { guessCount: number; guesses: Guess[] };
 
@@ -47,7 +48,7 @@ export function Game() {
 	const [currentGuess, setCurrentGuess] = useState<Guess>(new Guess());
 	const [lettersStateMap, setLettersStateMap] = useState(new Map<string, LetterStatus>());
 	const [gameState, setGameState] = useState<GameState>("PLAYING");
-
+	const { width: w, height: h } = useWindowSize();
 	const [{ guesses, guessCount }, dispatch] = useReducer(
 		GuessesReducer,
 		null,
@@ -63,6 +64,7 @@ export function Game() {
 		setCurrentGuess(new Guess());
 		setGameState("PLAYING");
 		dispatch({ type: "CLEAR" });
+		setLettersStateMap(new Map<string, LetterStatus>());
 	}, []);
 
 	const handleSubmitGuess = useCallback(() => {
@@ -107,12 +109,16 @@ export function Game() {
 		}, new Map<string, LetterStatus>());
 		setLettersStateMap(newLettersStateMap);
 
-		const hasWon = guesses[guessCount - 1].toString() === word;
+		const lastGuess = guesses[guessCount - 1];
 
-		if (hasWon) {
-			setGameState("WON");
-		} else if (guessCount === AMOUNT_OF_GUESSES) {
-			setGameState("LOST");
+		if (lastGuess) {
+			const hasWon = lastGuess.toString() === word;
+
+			if (hasWon) {
+				setGameState("WON");
+			} else if (guessCount === AMOUNT_OF_GUESSES) {
+				setGameState("LOST");
+			}
 		}
 	};
 
@@ -129,10 +135,10 @@ export function Game() {
 			{gameState === "PLAYING" && (
 				<Keyboard
 					key={word}
-					onSubmit={handleSubmitGuess}
-					lettersStateMap={lettersStateMap}
 					onChange={handleCurrentGuessChange}
+					onSubmit={handleSubmitGuess}
 					onValidate={handleValidateGuess}
+					lettersStateMap={lettersStateMap}
 					maxLength={WORD_LENGTH}
 				/>
 			)}
@@ -144,7 +150,7 @@ export function Game() {
 				Reset Game
 			</button>
 			<Toast ref={toastRef} />
-			{gameState === "WON" && <ReactConfetti />}
+			{gameState === "WON" && <ReactConfetti width={w} height={h} />}
 		</section>
 	);
 }

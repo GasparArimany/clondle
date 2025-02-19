@@ -67,11 +67,13 @@ export function GuessWord({ guess, onUnveilEnded }: { guess: Guess; onUnveilEnde
 		},
 	};
 
+	const animate = guess.letters.some((letter) => letter.status !== "EMPTY") ? "unveil" : undefined;
+
 	return (
 		<motion.div
 			initial={false}
 			variants={parentVariants}
-			animate={guess.letters.some((letter) => letter.status !== "EMPTY") ? "unveil" : ""}
+			animate={animate}
 			className="flex justify-center gap-4"
 			onAnimationComplete={onUnveilEnded}
 		>
